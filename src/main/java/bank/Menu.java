@@ -27,12 +27,11 @@ public class Menu {
   }
 
   private void showMenu(Customer customer, Account account) {
-    System.out.println("---------------------------------------");
-    System.out.println("Welcome, " + customer.getName() + "\n");
     int input = 0;
     double amt = 0;
     Boolean isValid = false;
     do {
+      System.out.println("Welcome, " + customer.getName() + "\n");
       System.out.println("Please select the options from the following:");
       System.out.println("1. Deposit");
       System.out.println("2. Withdraw");
@@ -50,22 +49,31 @@ public class Menu {
         updatedBalance = Math.round(updatedBalance * 100.0) / 100.0;
         DataSource dataSource = new DataSource();
         account = dataSource.updateAmount(account, updatedBalance);
+        System.out.println("Deposit successful!");
       } else if (input == 2) {
         System.out.println("---------------------------------------");
         do{
           System.out.println("Enter the amount to withdraw: ");
           amt = Double.parseDouble(scanner.next());
           if(amt > account.getBalance()){
-            System.out.println("Withdrawal amount larger than available, please try a smaller amount.\n");
+            System.out.println("Low balance, try again.");       
           }
-        }while(isValid==false);
+          else{
+            isValid = true;
+          }
+        }while(isValid == false);
+        double updatedBalance = account.getBalance() - amt;
+        updatedBalance = Math.round(updatedBalance * 100.0) / 100.0;
+        DataSource dataSource = new DataSource();
+        account = dataSource.updateAmount(account, updatedBalance);
       } else if (input == 3) {
         System.out.println("Your current balance is: " + account.getBalance());
       }
-    } while (input > 0 && input <= 3);
+    } while (input > 0 && input <= 3 && customer.isAuthenticated());
   }
 
   public static void main(String[] args) {
+    System.out.print("\033[H\033[2J");
     System.out.println("Welcome to World Bank International!");
 
     Menu menu = new Menu();
@@ -73,6 +81,7 @@ public class Menu {
 
     Customer customer = menu.authenticateUser();
     if (customer != null) {
+      System.out.println("Customer is authenticated, " + customer.isAuthenticated());
       Account account = DataSource.getAccount(customer.getAccountId());
       menu.showMenu(customer, account);
     }
